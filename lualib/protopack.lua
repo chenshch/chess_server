@@ -5,10 +5,10 @@ local M = {}
 
 function M.pack(name, msg, session)
 	local buf = skynet.call("pbc", "lua", "encode", name, msg)
-	local data = skynet.call("pbc","lua","encode","Msg.MsgBase",{name=Msg.MsgBase,data = buf,session = session})
+	local data = skynet.call("pbc","lua","encode","Msg.MsgBase",{name="Msg.MsgBase",data = buf,session = session})
 	local len = string.len(data)
 	local f = string.format("> i2 c%d", len)
-	return string.pack(f, data)
+	return string.pack(f, len, data)
 end
 
 function M.unpack(data)

@@ -62,7 +62,7 @@ function SOCKET.data(fd, name, msg)
 end
 
 function SOCKET.send(fd, name, msg)
-	skynet.call(gate, "lua", "response" , name,fd,msg)
+	skynet.call(gate, "lua", "response" , name, fd, msg)
 end
 
 ------------------------ socket消息结束-----------------------------

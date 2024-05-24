@@ -4,6 +4,7 @@ local socket = require "skynet.socket"
 local websocket = require "http.websocket"
 local socketdriver = require "skynet.socketdriver"
 local protopack = require "protopack"
+local utils = require "utils"
 
 local watchdog
 local connection = {}   -- fd -> connection : { fd , client, agent , ip, mode }
@@ -62,6 +63,33 @@ local function launch_master()
                 skynet.error(string.format("invalid client (fd = %d) error = %s", fd, err))
             end
         end)
+    end
+
+    function CMD_MASTER.forward(source, fd, client, address)
+        local c = assert(connection[fd])
+        unforward(c)
+        c.client = client or 0
+        c.agent = address or source
+        forwarding[c.agent] = c
+    end
+
+    function CMD_MASTER.response(source, name, fd, msg)
+        skynet.error("ws response: " .. name .. tostring(fd).."\n")
+        utils.print(msg)
+        local data = protopack.pack(name, msg)
+        -- forward msg
+        websocket.write(fd, data,"binary")
+    end
+
+    function CMD_MASTER.push(source, name, fd, msg)
+        skynet.error("ws push: " .. tostring(fd), msg.."\n")
+        local data = protopack.pack(name, msg)
+        -- forward msg
+        websocket.write(fd, data,"binary")
+    end
+
+    function CMD_MASTER.kick(source, fd)
+        websocket.close(fd)
     end
 
     skynet.dispatch("lua", function(session, source, cmd, ...)
